@@ -8,11 +8,28 @@ if [ -d "$folder" ]; then
 fi
 tarball="fedora-rootfs.tar.xz"
 if [ "$first" != 1 ];then
+	echo "Download Rootfs, this may take a while base on your internet speed."
+	arch=$(dpkg --print-architecture)
+	if [ "$arch" == 'aarch64' ];
+	then 
+		wget --tries=20 https://github.com/AndronixApp/AndronixOrigin/raw/master/Rootfs/Fedora/arm64/fedora.partaa -O fedora.partaa
+		wget --tries=20 https://github.com/AndronixApp/AndronixOrigin/raw/master/Rootfs/Fedora/arm64/fedora.partab -O fedora.partab
+		cat fedora.parta* > fedora-rootfs.tar.xz
+		rm -rf fedora.parta*
+		cur=`pwd`
+		mkdir -p "$folder"
+		cd "$folder"
+		echo "Decompressing Rootfs, please be patient."
+		proot --link2symlink tar -xJf ${cur}/${tarball} --exclude='dev'||:
+		cd "$cur"
+		first=1
+	fi
+fi
+
+if [ "$first" != 1 ];then
 	if [ ! -f $tarball ]; then
 		echo "Download Rootfs, this may take a while base on your internet speed."
 		case `dpkg --print-architecture` in
-		aarch64)
-			archurl="arm64" ;;
 		arm)
 			archurl="armhf" ;;
 		amd64)
